@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>~WTHR</title>
+        <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="css/icons/icons.css">
+        <link rel="stylesheet" href="css/animate.css">
+        <link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700' rel='stylesheet' type='text/css'>
+    </head>
+    <body>
+        <div id="nav">
+            <div class="nav-item" id="nav-traffic">TRAFFIC</div>
+            <div class="nav-item" id="nav-weather">WEATHER</div>
+        </div>
+        <div id="forecast-container">
+            <ul id="forecast"></ul>
+        </div>
+        <div id="clock"></div>
+        <div id="news"></div>
+        <div id="map-container">
+            <iframe id="map" src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d86050.15024094965!2d-122.42150085557832!3d47.624825074543054!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e6!4m5!1s0x5490169429d20749%3A0x9f7fe4b733ac165!2s10326+15th+Ave+NW%2C+Seattle%2C+WA+98177!3m2!1d47.704361!2d-122.376086!4m5!1s0x54904195b6e5e62f%3A0xc742843a7702fe79!2sPacific+Market+Center%2C+4th+Avenue+South%2C+Seattle%2C+WA!3m2!1d47.547139!2d-122.32909!5e0!3m2!1sen!2sus!4v1433222675421"></iframe>
+        </div>
+        <script>
+            var weather = [];
+        </script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="js/animateback.js"></script>
+        <script src="js/weather_b.js"></script>
+        <script src="js/news_b.js"></script>
+        <script src="js/clock.js"></script>
+        <script>
+            var mapShown = false;
+            var weatherShown = true;
+            
+            $(document).ready(function() {
+                $("#nav-traffic").click(function() {
+                    if(mapShown === false) {
+                        mapShown = true;
+                        $("#map-container").fadeIn();
+                    } else {
+                        mapShown = false;
+                        $("#map-container").fadeOut();
+                    }
+                });
+                
+                $("#map-container").click(function() {
+                    if(mapShown === true) {
+                        mapShown = false;
+                        $("#map-container").fadeOut();
+                    }
+                });
+                
+                $("#nav-weather").click(function() {
+                    if(weatherShown === false) {
+                        $("#forecast-container").animateCSS('slideInRight', function() {
+                            weatherShown = true;
+                        });
+                    } else {
+                        $("#forecast-container").animateCSS('slideOutLeft', function() {
+                            $("#forecast-container").hide();
+                            weatherShown = false;
+                        });
+                    }
+                });
+                
+
+            });
+                
+        </script>
+    </body>
+</html>
