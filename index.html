@@ -15,9 +15,18 @@
         <div id="nav">
             <div class="nav-item" id="nav-traffic">TRAFFIC</div>
             <div class="nav-item" id="nav-weather">WEATHER</div>
+            <div class="nav-item" id="nav-music">MUSIC</div>
+            <div class="nav-item" id="nav-news">NEWS</div>
+            <div class="nav-item right" id="nav-stop">STOP</div>
+            <div class="nav-item right" id="nav-play"><span id="play-text">PLAY</span><img id="audio" src="img/sound.gif"></div>
+            <div class="nav-item right" id="nav-up">UP</div>
+            <div class="nav-item right" id="nav-down">DOWN</div>
         </div>
         <div id="forecast-container">
             <ul id="forecast"></ul>
+        </div>
+        <div id="tracks-container">
+            <ul id="tracks"></ul>
         </div>
         <div id="clock"></div>
         <div id="news"></div>
@@ -26,17 +35,46 @@
         </div>
         <script>
             var weather = [];
+            var top50ids = [];
+            var hasTrack = [];
         </script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
         <script src="js/animateback.js"></script>
         <script src="js/weather_b.js"></script>
         <script src="js/news_b.js"></script>
+        <script src="js/hype_b.js"></script>
         <script src="js/clock.js"></script>
         <script>
             var mapShown = false;
             var weatherShown = true;
+            var musicShown = false;
+            var newsShown = true;
+            var activeTrack = 0;
+            var firstClick = true;
             
-            $(document).ready(function() {
+            function updateTrack() {
+                var all = $(".track");
+                for(var x = 0; x < 50; x++) {
+                    $($(all[x])).css('border', 'none');
+                    //console.log(all[x]);
+                }
+                $($("#tracks").children()[activeTrack]).children().css('border', '1px solid #fff');
+            }
+            
+            function updateTrackList() {
+                $.get( "listTracks.php")
+                    .done(function(data) {
+                    data = data.split(" ");
+                    for(item in data) {
+                        hasTrack.push(data[item].split(".")[0]);
+                    }
+                });
+            }
+            
+            $(document).ready(function() {  
+                
+                updateTrackList();
+                
                 $("#nav-traffic").click(function() {
                     if(mapShown === false) {
                         mapShown = true;
@@ -56,7 +94,7 @@
                 
                 $("#nav-weather").click(function() {
                     if(weatherShown === false) {
-                        $("#forecast-container").animateCSS('slideInRight', function() {
+                        $("#forecast-container").animateCSS('slideInLeft', function() {
                             weatherShown = true;
                         });
                     } else {
@@ -67,7 +105,106 @@
                     }
                 });
                 
+                $("#nav-music").click(function() {
+                    if(firstClick) {
+                        updateTrack();
+                        firstClick = false;
+                    }
+                    if(musicShown === false) {
+                        $("#tracks-container").animateCSS('slideInRight', function() {
+                            musicShown = true;
+                        });
+                    } else {
+                        $("#tracks-container").animateCSS('slideOutRight', function() {
+                            $("#tracks-container").hide();
+                            musicShown = false;
+                        });
+                    }
+                });
+                
+                $("#nav-news").click(function() {
+                    if(newsShown === false) {
+                        $("#news").css('opacity', '0');
+                        newsShown = true;
+                    } else {
+                        $("#news").css('opacity', '1');
+                        newsShown = false;
+                    }
+                });
+                    
+                
+                $("#nav-down").click(function() {
+                    if(activeTrack === 49) {
+                        activeTrack = 0;
+                    } else {
+                        activeTrack += 1;
+                    }
 
+                    updateTrack();
+                });
+                
+                $("#nav-up").click(function() {
+                    if(activeTrack === 0) {
+                        activeTrack = 49;
+                    } else {
+                        activeTrack -= 1;
+                    }
+                    
+                    updateTrack();
+                });
+                
+                /*
+                $("#nav-play").click(function() {
+                    $.get( "getAndPlay.php", {name: "John"} )
+                        .done(function(data) {
+                        alert("Data Loaded: " + data);
+                    });
+                });
+                */
+                
+                $("#nav-play").click(function() {
+                    $("#play-text").hide();
+                    $("#audio").show();
+                    $.get( "getProcesses.php", {id: top50ids[activeTrack]} )
+                        .done(function(data) {
+                            $.get( "stopPlayback.php", {pid: data.split(" ")[0]} )
+                                .done(function(data) {
+                                    console.log(data);
+                            });
+                        });
+                    if(hasTrack.indexOf(top50ids[activeTrack]) === -1) {
+                        console.log("Need to get...");
+                        $.get( "getTrack.php", {id: top50ids[activeTrack]} )
+                            .done(function(data) {
+                                console.log(data);
+                                console.log("Got. Updating...");
+                                updateTrackList();
+                                console.log("Updated. playing...");
+                                $.get( "playTrack.php", {id: top50ids[activeTrack]} )
+                                    .done(function(data) {
+                                        console.log(data);
+                                });
+                            });
+                    } else {
+                        console.log("Have it. Playing...");
+                        $.get( "playTrack.php", {id: top50ids[activeTrack]} )
+                            .done(function(data) {
+                                console.log(data);
+                            });
+                    }
+                });
+                
+                $("#nav-stop").click(function() {
+                    $.get( "getProcesses.php", {id: top50ids[activeTrack]} )
+                        .done(function(data) {
+                            $.get( "stopPlayback.php", {pid: data.split(" ")[0]} )
+                                .done(function(data) {
+                                    $("#audio").hide();
+                                    $("#play-text").show();
+                                    console.log(data);
+                            });
+                        });
+                });
             });
                 
         </script>

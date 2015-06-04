@@ -87,7 +87,7 @@ $(document).ready(function() {
 
       };
 
-      for(item in weather) {
+      for(var item = 0; item < 5; item++) {
         $('#forecast').append(
           $('<li>').append(
             $('<div>').attr('class','date').append(weather[item].Date),
@@ -106,7 +106,7 @@ $(document).ready(function() {
         ));
       };
 
-      $("#forecast").children().first().css("border", "1px solid #fff");
+      $("#forecast").children().first().css("border", "1px solid #ffff00");
 
     });
   });
