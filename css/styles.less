@@ -12,7 +12,7 @@ html {
 
 #clock {
     color: #fff;
-    position: absolute;
+    position: fixed;
     bottom: 0;
     right: 0;
     padding: 5px;
@@ -22,7 +22,7 @@ html {
 }
 
 #news {
-    position: absolute;
+    position: fixed;
     left: 0;
     bottom: 0;
     padding: 5px;
@@ -32,6 +32,7 @@ html {
     font-weight: 100;
     width: 55%;
     text-align: center;
+    transition: opacity 0.25s linear;
 }
 
 #forecast {
@@ -83,7 +84,7 @@ html {
 
 #tracks-container {
     position: absolute;
-    top: 2em;
+    top: 4em;
     right: 0;
     display: none;
     
@@ -112,16 +113,17 @@ html {
 }
 
 #nav {
-    height: 30px;
-    border-bottom: 1px solid #fff;
+    height: 50px;
     cursor: pointer;
     
     .nav-item {
+        height: 100%;
         font-family: 'Lato', sans-serif;
         font-weight: 100;
         color: #fff;
         float: left;
         padding: 5px;
+        padding-top: 30px;
         width: 10%;
         text-align: center;
         border: 1px solid #fff;
@@ -132,8 +134,16 @@ html {
         
         #audio {
             display: none;
-            height: 15px;
-            width: 55px;
+            height: 60px;
+            width: 100%;
+            margin-top: -20px;
+        }
+        
+        #loading {
+            display: none;
+            height: 30px;
+            width: 30px;
+            margin-top: -5px;
         }
     }
     
@@ -145,7 +155,7 @@ html {
 #map-container {
     display: none;
     position: absolute;
-    top: 50px;
+    top: 0;
     left: 0;
     
     width: 100%;

@@ -13,12 +13,16 @@
     </head>
     <body>
         <div id="nav">
-            <div class="nav-item" id="nav-traffic">TRAFFIC</div>
             <div class="nav-item" id="nav-weather">WEATHER</div>
-            <div class="nav-item" id="nav-music">MUSIC</div>
+            <div class="nav-item" id="nav-traffic">TRAFFIC</div>
             <div class="nav-item" id="nav-news">NEWS</div>
+            <div class="nav-item" id="nav-music">MUSIC</div>
             <div class="nav-item right" id="nav-stop">STOP</div>
-            <div class="nav-item right" id="nav-play"><span id="play-text">PLAY</span><img id="audio" src="img/sound.gif"></div>
+            <div class="nav-item right" id="nav-play">
+                <span id="play-text">PLAY</span>
+                <img id="audio" src="img/sound.gif">
+                <img id="loading" src="img/loading.gif">
+            </div>
             <div class="nav-item right" id="nav-up">UP</div>
             <div class="nav-item right" id="nav-down">DOWN</div>
         </div>
@@ -42,7 +46,7 @@
         <script src="js/animateback.js"></script>
         <script src="js/weather_b.js"></script>
         <script src="js/news_b.js"></script>
-        <script src="js/hype_b.js"></script>
+        <script src="js/simpleHype.js"></script>
         <script src="js/clock.js"></script>
         <script>
             var mapShown = false;
@@ -51,12 +55,12 @@
             var newsShown = true;
             var activeTrack = 0;
             var firstClick = true;
+            var allowPlaylist = true;
             
             function updateTrack() {
                 var all = $(".track");
                 for(var x = 0; x < 50; x++) {
                     $($(all[x])).css('border', 'none');
-                    //console.log(all[x]);
                 }
                 $($("#tracks").children()[activeTrack]).children().css('border', '1px solid #fff');
             }
@@ -69,6 +73,50 @@
                         hasTrack.push(data[item].split(".")[0]);
                     }
                 });
+            }
+            
+            function playNext() {
+                if(activeTrack === 49) {
+                    allowPlaylist = false;
+                    activeTrack = 0;
+                } else {
+                    activeTrack += 1;
+                }
+                updateTrack();
+                if(allowPlaylist) {
+                    if(hasTrack.indexOf(top50ids[activeTrack]) === -1) {
+                        console.log("Need to get...");
+                        $("#play-text").hide();
+                        $("#loading").show();
+                        $.get( "getTrack.php", {id: top50ids[activeTrack]} )
+                            .done(function(data) {
+                                console.log(data);
+                                console.log("Got. Updating...");
+                                updateTrackList();
+                                console.log("Updated. playing...");
+                                $("#loading").hide();
+                                $("#audio").show();
+                                $.get( "playTrack.php", {id: top50ids[activeTrack]} )
+                                    .done(function(data) {
+                                        console.log(data);
+                                        $("#audio").hide();
+                                        $("#play-text").show();
+                                        playNext();
+                                });
+                            });
+                    } else {
+                        console.log("Have it. Playing...");
+                        $("#play-text").hide();
+                        $("#audio").show();
+                        $.get( "playTrack.php", {id: top50ids[activeTrack]} )
+                            .done(function(data) {
+                                console.log(data);
+                                $("#audio").hide();
+                                $("#play-text").show();
+                                playNext();
+                            });
+                    }
+                }
             }
             
             $(document).ready(function() {  
@@ -123,12 +171,12 @@
                 });
                 
                 $("#nav-news").click(function() {
-                    if(newsShown === false) {
+                    if(newsShown === true) {
                         $("#news").css('opacity', '0');
-                        newsShown = true;
+                        newsShown = false;
                     } else {
                         $("#news").css('opacity', '1');
-                        newsShown = false;
+                        newsShown = true;
                     }
                 });
                     
@@ -163,43 +211,69 @@
                 */
                 
                 $("#nav-play").click(function() {
-                    $("#play-text").hide();
-                    $("#audio").show();
-                    $.get( "getProcesses.php", {id: top50ids[activeTrack]} )
-                        .done(function(data) {
-                            $.get( "stopPlayback.php", {pid: data.split(" ")[0]} )
-                                .done(function(data) {
-                                    console.log(data);
-                            });
-                        });
-                    if(hasTrack.indexOf(top50ids[activeTrack]) === -1) {
-                        console.log("Need to get...");
-                        $.get( "getTrack.php", {id: top50ids[activeTrack]} )
+                    if(musicShown === true) {
+                        $("#audio").hide();
+                        $.get( "getProcesses.php", {id: top50ids[activeTrack]} )
                             .done(function(data) {
-                                console.log(data);
-                                console.log("Got. Updating...");
-                                updateTrackList();
-                                console.log("Updated. playing...");
-                                $.get( "playTrack.php", {id: top50ids[activeTrack]} )
+                                $.get( "stopPlayback.php", {pid: data.split(" ")[0]} )
                                     .done(function(data) {
                                         console.log(data);
                                 });
                             });
+                        if(hasTrack.indexOf(top50ids[activeTrack]) === -1) {
+                            console.log("Need to get...");
+                            $("#play-text").hide();
+                            $("#loading").show();
+                            $.get( "getTrack.php", {id: top50ids[activeTrack]} )
+                                .done(function(data) {
+                                    console.log(data);
+                                    console.log("Got. Updating...");
+                                    updateTrackList();
+                                    console.log("Updated. playing...");
+                                    $("#loading").hide();
+                                    $("#audio").show();
+                                    $.get( "playTrack.php", {id: top50ids[activeTrack]} )
+                                        .done(function(data) {
+                                            console.log(data);
+                                            $("#audio").hide();
+                                            $("#play-text").show();
+                                            allowPlaylist = true;
+                                            playNext();
+                                    });
+                                });
+                        } else {
+                            console.log("Have it. Playing...");
+                            $("#play-text").hide();
+                            $("#audio").show();
+                            $.get( "playTrack.php", {id: top50ids[activeTrack]} )
+                                .done(function(data) {
+                                    console.log(data);
+                                    $("#audio").hide();
+                                    $("#play-text").show();
+                                    allowPlaylist = true;
+                                    playNext();
+                                });
+                        }
                     } else {
-                        console.log("Have it. Playing...");
-                        $.get( "playTrack.php", {id: top50ids[activeTrack]} )
-                            .done(function(data) {
-                                console.log(data);
-                            });
+                        if(firstClick) {
+                            updateTrack();
+                            firstClick = false;
+                        }
+                        $("#tracks-container").animateCSS('slideInRight', function() {
+                            musicShown = true;
+                        });
                     }
+                        
                 });
                 
                 $("#nav-stop").click(function() {
+                    allowPlaylist = false;
                     $.get( "getProcesses.php", {id: top50ids[activeTrack]} )
                         .done(function(data) {
                             $.get( "stopPlayback.php", {pid: data.split(" ")[0]} )
                                 .done(function(data) {
                                     $("#audio").hide();
+                                    $("#loading").hide();
                                     $("#play-text").show();
                                     console.log(data);
                             });
