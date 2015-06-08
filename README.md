@@ -1,1 +1,1 @@
-# mirror-mirror
+# mirror-mirror-js
